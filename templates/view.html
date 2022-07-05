@@ -1,0 +1,25 @@
+<html>
+    <body>
+        <h3>Device Information</h3>
+        <table border = 1>
+            <thead>
+                <td>Device Name</td>
+                <td>Device OS</td>
+                <td>Device OS Build</td>
+            </thead>
+
+            {% for obj in device_query %}
+                
+                <tr>
+                    <!--<td><a href="/view/{{obj["deviceName"]}}">{{obj["deviceName"]}}</a></td>-->
+                    <td><a href = {{ url_for('test' ,name=obj[0]) }}>{{ obj["deviceName"] }}</a></td>
+                    <td>{{obj['deviceOS']}}</td>
+                    <td>{{obj["deviceOSBuild"]}}</td>
+                </tr>
+                
+            
+            {% endfor %}
+        </table>
+
+    </body>
+</html>

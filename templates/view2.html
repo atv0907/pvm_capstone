@@ -1,0 +1,68 @@
+<html>
+    <body>
+        <h3>Device Information</h3>
+        <table border = 1>
+            <thead>
+                <td>Device Name</td>
+                <td>Device OS</td>
+                <td>Device OS Build</td>
+            </thead>
+
+            {% for obj in device_query %}
+                
+                <tr>
+                    <td>{{obj["deviceName"]}}</td>
+                    <td>{{obj["deviceOS"]}}</td>
+                    <td>{{obj["deviceOSBuild"]}}</td>
+                </tr>
+                
+            
+            {% endfor %}
+        </table>
+
+        <h3>Software Information</h3>
+        <table border = 1>
+            <thead>
+                <td>Software Name</td>
+                <td>Software Vendor</td>
+                <td>Software Build Version</td>
+            </thead>
+
+            {% for obj in soft_query %}
+
+                <tr>
+                    <td>{{obj["softName"]}}</td>
+                    <td>{{obj["softVendor"]}}</td>
+                    <td>{{obj["softBuildVer"]}}</td>
+                </tr>
+            
+            {% endfor %}
+        </table>
+
+        <h3>Vulnerability Information</h3>
+        <table border = 1>
+            <thead>
+                <td>CVE Name</td>
+                <td>CVE Description</td>
+                <td>CVE Publish Date</td>
+                <td>CVSS Severity Score</td>
+                <td>CPE Name</td>
+                <td>CPE Notes</td>
+            </thead>
+
+            {% for obj in vuln_query %}
+
+                <tr>
+                    <td>{{obj["cveName"]}}</td>
+                    <td>{{obj["cveDescription"]}}</td>
+                    <td>{{obj["cvePublishDate"]}}</td>
+                    <td>{{obj["cvssScore"]}}</td>
+                    <td>{{obj["cpeName"]}}</td>
+                    <td>{{obj["cpeNotes"]}}</td>
+                </tr>
+            
+            {% endfor %}
+        </table>
+
+    </body>
+</html>

@@ -1,0 +1,28 @@
+<html>
+    <body>
+        <h3>CVE Search Results</h3>
+        <table border = 1>
+            <thead>
+                <td>CVE ID</td>
+                <td>CWE ID</td>
+                <td>CVSS v3 Score</td>
+                <td>CVSS v2 Score</td>
+                <td>Current Description</td>
+            </thead>
+
+            {% for obj in results %}
+                
+                <tr>
+                    <td>{{obj['cve_id']}}</td>
+                    <td>{{obj['cwe_id']}}</td>
+                    <td>{{obj['cvssv3']}}</td>
+                    <td>{{obj['cvssv2']}}</td>
+                    <td>{{obj['description']}}</td>
+                </tr>
+                
+            
+            {% endfor %}
+        </table>
+
+    </body>
+</html>
