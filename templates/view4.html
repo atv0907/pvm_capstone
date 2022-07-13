@@ -1,0 +1,20 @@
+<html>
+    <body>
+        <h3>CPE Search Results</h3>
+        <table border = 1>
+            <thead>
+                <td>CPE ID</td>
+            </thead>
+
+            {% for obj in results %}
+                
+                <tr>
+                    <td>{{obj['cpe_id']}}</td>
+                </tr>
+                
+            
+            {% endfor %}
+        </table>
+
+    </body>
+</html>

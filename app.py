@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from lxml import etree as ET
 import sqlite3
 import pip._vendor.requests
 import json
@@ -23,6 +24,35 @@ def upload():
 @app.route("/search")
 def form():
     return render_template('form.html')
+
+@app.route("/search2")
+def form2():
+    return render_template('form.html')
+
+@app.route("/search2", methods=['POST'])
+def search2():
+    class CPE_Search:
+        def __init__(self, cpe_id):
+            self.cpe_id = cpe_id
+
+    #Command line argument Parse
+    text = request.form['text']
+
+    #Obtain vulnerability information corresponding to CPE from NVD in JSON format
+    cpe_name = text
+    api = 'https://services.nvd.nist.gov/rest/json/cpes/1.0?keyword={cpe_name}'
+    uri = api.format(cpe_name=cpe_name)
+    response = pip._vendor.requests.get(uri)
+    json_data = json.loads(response.text)
+    cpes = json_data['result']['cpes']
+    results=[]
+    for item in cpes:
+        jcpe_id = item['cpe23Uri'] # CVE-Get ID
+        #jcpe_title = item['titles']['title']
+
+        results.append(CPE_Search(jcpe_id))  
+    return render_template("view4.html", results=results)
+
 
 @app.route("/search", methods=['POST'])
 def search():
