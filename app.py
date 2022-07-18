@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from lxml import etree as ET
+import os
+from os.path import join, dirname, realpath
 import sqlite3
 import pip._vendor.requests
 import json
 import textwrap
+import pandas as pd
 
 #Track - 07-05-2022 (Test)
 
@@ -12,6 +15,8 @@ app = Flask(__name__)
 con = sqlite3.connect("db.db")
 print("DB Connection Established")
 
+UPLOAD_FOLDER = 'static/files'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route("/")
 def main():
@@ -20,6 +25,18 @@ def main():
 @app.route("/upload")
 def upload():
     return render_template("upload.html")
+
+@app.route("/upload", methods=['POST'])
+def upload_file():
+    inventory_file = request.files['file']
+    if inventory_file.filename != '':
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], inventory_file.filename)
+        inventory_file.save(file_path)
+        csv_data = pd.read_csv(file_path, usecols=["Name","Version"],skiprows=1)
+        csv_data_list = csv_data.set_index('Name').T.to_dict('list')
+        print(csv_data_list)
+    return render_template("index.html")
+
 
 @app.route("/search")
 def form():
