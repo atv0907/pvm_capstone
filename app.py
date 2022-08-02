@@ -26,6 +26,95 @@ def main():
 def upload():
     return render_template("upload.html")
 
+def search_cve(text):
+    class CVE_Search:
+        def __init__(self, cve_id, cwe_id, cvssv3, cvssv2, description):
+            self.cve_id = cve_id
+            self.cwe_id = cwe_id
+            self.cvssv3 = cvssv3
+            self.cvssv2 = cvssv2
+            self.description = description
+        
+        def __repr__(self):
+            rep = 'CVE:' + self.cve_id + ' , CWE_ID:' + self.cwe_id + ' , CVSS V3 Score:' + str(self.cvssv3) + ' , CVSS V2 Score:' + str(self.cvssv2) + ' ,Description:' + self.description
+            return rep
+
+
+    #Obtain vulnerability information corresponding to CPE from NVD in JSON format
+    cpe_name = text
+    api = 'https://services.nvd.nist.gov/rest/json/cves/1.0?cpeMatchString={cpe_name}'
+    uri = api.format(cpe_name=cpe_name)
+    response = pip._vendor.requests.get(uri)
+    json_data = json.loads(response.text)
+    vulnerabilities = json_data['result']['CVE_Items']
+    results=[]
+    for vuln in vulnerabilities:
+        jcve_id = vuln['cve']['CVE_data_meta']['ID']  # CVE-Get ID
+        jcurrent_description = vuln['cve']['description']['description_data'][0]['value']  #Get Current Description
+        jcwe_id = vuln['cve']['problemtype']['problemtype_data'][0]['description'][0]['value']  # CWE-Get ID
+
+        #Get BaseScore and VectorString if you have CVSS v3 information
+        if 'baseMetricV3' in vuln['impact']:
+            jcvssv3_base_score = vuln['impact']['baseMetricV3']['cvssV3']['baseScore']
+            cvssv3_vector_string = vuln['impact']['baseMetricV3']['cvssV3']['vectorString']
+            
+        else:
+            jcvssv3_base_score = None
+            cvssv3_vector_string = None
+
+        #Get BaseScore and VectorString for CVSS v2
+        if 'baseMetricV2' in vuln['impact']:
+            jcvssv2_base_score = vuln['impact']['baseMetricV2']['cvssV2']['baseScore']
+            cvssv2_vector_string = vuln['impact']['baseMetricV2']['cvssV2']['vectorString']
+        
+        else:
+            jcvssv2_base_score = None
+            cvssv2_vector_string = None
+
+
+        #output
+        x='---------'
+        text = textwrap.dedent('''
+        CVE-ID:{cve_id}<br>
+        CWE-ID:{cwe_id}<br>
+        CVSSv3 BaseScore:{cvssv3_base_score} CVSSv3 VectorString:{cvssv3_vector_string}<br>
+        CVSSv2 BaseScore:{cvssv2_base_score} CVSSv2 VectorString: {cvssv2_vector_string}<br>
+        Current Description:<br>
+        {current_description}<br>
+        ''')
+        #z=text.format(cve_id=cve_id, cwe_id=cwe_id, cvssv3_base_score=cvssv3_base_score, cvssv3_vector_string=cvssv3_vector_string,
+                          #cvssv2_base_score=cvssv2_base_score, cvssv2_vector_string=cvssv2_vector_string, current_description=current_description)
+        y='---------'
+        results.append(CVE_Search(jcve_id,jcwe_id,jcvssv3_base_score,jcvssv2_base_score,jcurrent_description))
+
+    return results    
+    #return render_template("view3.html", results=results)
+
+def search_cpe(text):
+    class CPE_Search:
+        def __init__(self, cpe_id):
+            self.cpe_id = cpe_id
+        
+        def __repr__(self):
+            rep = self.cpe_id
+            return rep
+    #Obtain vulnerability information corresponding to CPE from NVD in JSON format
+    cpe_name = text
+    api = 'https://services.nvd.nist.gov/rest/json/cpes/1.0?keyword={cpe_name}'
+    uri = api.format(cpe_name=cpe_name)
+    response = pip._vendor.requests.get(uri)
+    json_data = json.loads(response.text)
+    cpes = json_data['result']['cpes']
+    results=[]
+    for item in cpes:
+        jcpe_id = item['cpe23Uri'] # CVE-Get ID
+        #jcpe_title = item['titles']['title']
+
+        results.append(CPE_Search(jcpe_id))
+    for item in results:
+        print(str(item))
+    return results
+
 @app.route("/upload", methods=['POST'])
 def upload_file():
     inventory_file = request.files['file']
@@ -35,7 +124,19 @@ def upload_file():
         csv_data = pd.read_csv(file_path, usecols=["Name","Version"],skiprows=1)
         csv_data_list = csv_data.set_index('Name').T.to_dict('list')
         print(csv_data_list)
-    return render_template("index.html")
+        cpe_search=[]
+        for key in csv_data_list:
+            cpe_search.append(search_cpe(key))
+        print(cpe_search)
+        #length is 2
+        length = len(csv_data_list)-1
+        i = 0
+        cve_search=[]
+        while i < length:
+            cve_search.append(search_cve(cpe_search[i][0]))
+            i+=1
+        print(cve_search)
+    #return render_template("index.html")
 
 
 @app.route("/search")
@@ -68,6 +169,7 @@ def search2():
         #jcpe_title = item['titles']['title']
 
         results.append(CPE_Search(jcpe_id))  
+    #return results
     return render_template("view4.html", results=results)
 
 
@@ -125,7 +227,7 @@ def search():
         y='---------'
         results.append(CVE_Search(jcve_id,jcwe_id,jcvssv3_base_score,jcvssv2_base_score,jcurrent_description))
 
-    print(results[0].cve_id)    
+    #return results    
     return render_template("view3.html", results=results)
     
     
